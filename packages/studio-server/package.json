@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "npx remotion studio --port=3000",
-    "build": "remotion build"
+    "start": "node node_modules/remotion/cli/index.js studio --port=3000",
+    "build": "node node_modules/remotion/cli/index.js build"
   },
   "dependencies": {
     "remotion": "^4.0.0",
