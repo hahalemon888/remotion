@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "remotion render --serve",
+    "start": "npx remotion studio --port=3000",
     "build": "remotion build"
   },
   "dependencies": {
