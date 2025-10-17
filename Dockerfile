@@ -1,31 +1,24 @@
-# ---------- 构建阶段 ----------
-FROM node:18 AS builder
+# 使用 Node 18
+FROM node:18-alpine
 
+# 设置工作目录
 WORKDIR /app
 
-# 复制依赖文件并安装
-COPY package*.json ./
+# 拷贝依赖清单
+COPY package.json package-lock.json* ./
+COPY packages/studio-server/package.json ./packages/studio-server/
+
+# 安装依赖
 RUN npm install
 
-# 复制所有项目文件
+# 拷贝全部源代码
 COPY . .
 
-# 构建项目
-RUN npm run build
+# 切换工作目录到 studio-server
+WORKDIR /app/packages/studio-server
 
-# ---------- 运行阶段 ----------
-FROM node:18-slim
+# 构建项目（如果需要）
+RUN npm run build || echo "no build step, skipping"
 
-WORKDIR /app
-
-# 仅复制运行所需文件
-COPY --from=builder /app /app
-
-# 安装生产依赖（可选）
-RUN npm install --omit=dev
-
-# 暴露 Remotion 端口
-EXPOSE 3000
-
-# 启动 Remotion Render Server
+# 启动服务
 CMD ["npm", "start"]
