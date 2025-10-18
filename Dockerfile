@@ -1,30 +1,14 @@
 # 使用 Node 18 Alpine 版本
 FROM node:18-alpine
 
-# 安装系统依赖
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-
-# 设置环境变量
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
-    NODE_ENV=production \
-    NODE_OPTIONS="--max-old-space-size=256"
-
 # 设置工作目录
 WORKDIR /app
 
 # 创建 package.json
-RUN echo '{"name":"remotion-api-server","version":"1.0.0","scripts":{"start":"node server.js"},"dependencies":{"express":"^4.18.0","remotion":"^4.0.0","@remotion/renderer":"^4.0.0","react":"^18.0.0","react-dom":"^18.0.0"}}' > package.json
+RUN echo '{"name":"remotion-api-server","version":"1.0.0","scripts":{"start":"node server.js"},"dependencies":{"express":"^4.18.0"}}' > package.json
 
-# 创建完整的 API 服务器
-RUN echo 'const express = require("express");const { renderMedia } = require("@remotion/renderer");console.log("Starting Remotion API Server...");const app = express();app.use(express.json());console.log("Express app created");app.get("/health", (req, res) => {console.log("Health check requested");res.json({status: "ok", message: "Remotion API Server is running", timestamp: new Date().toISOString(), memory: process.memoryUsage()});});app.post("/api/tasks", async (req, res) => {console.log("Render task requested:", req.body);try {const { fileName, outputLocation, composition, prone } = req.body;console.log("Task parameters:", { fileName, outputLocation, composition, prone });const outputPath = `${outputLocation}/${fileName}`;console.log("Output path:", outputPath);const compositionConfig = {id: composition || "MyComposition", width: 1920, height: 1080, fps: 30, durationInFrames: 30};console.log("Starting render with composition:", compositionConfig);await renderMedia({composition: compositionConfig, serveUrl: "http://localhost:3000", codec: "h264", outputLocation: outputPath, inputProps: { prone: prone || 0 }});console.log("Render completed successfully");res.json({success: true, message: "Video rendered successfully", taskId: Date.now(), fileName, outputPath, composition: compositionConfig});} catch (error) {console.error("Render error:", error);res.status(500).json({error: error.message, stack: error.stack});}});console.log("Routes defined");const PORT = process.env.PORT || 3000;app.listen(PORT, () => {console.log(`Remotion API Server running on port ${PORT}`);console.log(`Available endpoints:`);console.log(`- GET /health`);console.log(`- POST /api/tasks`);console.log(`Memory usage: ${JSON.stringify(process.memoryUsage())}`);});console.log("Server setup complete");' > server.js
+# 创建稳定的测试服务器
+RUN echo 'const express = require("express");console.log("Starting Remotion API Server...");const app = express();app.use(express.json());console.log("Express app created");app.get("/health", (req, res) => {console.log("Health check requested");res.json({status: "ok", message: "Remotion API Server is running", timestamp: new Date().toISOString(), memory: process.memoryUsage()});});app.post("/api/tasks", (req, res) => {console.log("Render task requested:", req.body);try {const { fileName, outputLocation, composition, prone } = req.body;console.log("Task parameters:", { fileName, outputLocation, composition, prone });const outputPath = `${outputLocation}/${fileName}`;console.log("Output path:", outputPath);res.json({success: true, message: "Task received successfully (test mode)", taskId: Date.now(), fileName, outputPath, composition, prone, note: "This is a test response - no actual rendering performed"});} catch (error) {console.error("Task error:", error);res.status(500).json({error: error.message});}});console.log("Routes defined");const PORT = process.env.PORT || 3000;app.listen(PORT, () => {console.log(`Remotion API Server running on port ${PORT}`);console.log(`Available endpoints:`);console.log(`- GET /health`);console.log(`- POST /api/tasks`);console.log(`Memory usage: ${JSON.stringify(process.memoryUsage())}`);});console.log("Server setup complete");' > server.js
 
 # 验证文件
 RUN ls -la
@@ -32,7 +16,7 @@ RUN cat package.json
 RUN cat server.js
 
 # 安装依赖
-RUN npm install --legacy-peer-deps --production
+RUN npm install --production
 
 # 暴露端口
 EXPOSE 3000
