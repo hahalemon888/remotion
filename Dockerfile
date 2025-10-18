@@ -1,24 +1,24 @@
-# 使用 Node.js 18 版本（Remotion 官方推荐）
+# 使用 Node 18（Remotion 推荐版本）
 FROM node:18-alpine
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制所有 package.json（包括 workspace 子包）
+# 复制依赖文件
 COPY package.json package-lock.json* ./
 COPY packages/studio-server/package.json ./packages/studio-server/
 
-# 安装依赖（包括 remotion）
-RUN npm install remotion @remotion/renderer --legacy-peer-deps
+# 安装子包依赖（确保 remotion 安装在 studio-server 内部）
+RUN cd packages/studio-server && npm install --legacy-peer-deps
 
-# 复制整个项目（包括源代码）
+# 拷贝源代码
 COPY . .
 
-# 设置工作目录到 studio-server
+# 切换到 studio-server 目录
 WORKDIR /app/packages/studio-server
 
 # 暴露端口
 EXPOSE 3000
 
 # 启动命令
-CMD ["node", "../../node_modules/remotion/cli/index.js", "studio", "--port=3000"]
+CMD ["npm", "start"]
