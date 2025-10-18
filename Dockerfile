@@ -19,7 +19,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 # 设置工作目录
 WORKDIR /app
 
-# 创建 package.json（简化版本）
+# 创建完整的 package.json（包含 React 依赖）
 RUN echo '{ \
   "name": "remotion-server", \
   "version": "1.0.0", \
@@ -29,7 +29,10 @@ RUN echo '{ \
   "dependencies": { \
     "remotion": "^4.0.0", \
     "@remotion/cli": "^4.0.0", \
-    "@remotion/renderer": "^4.0.0" \
+    "@remotion/renderer": "^4.0.0", \
+    "@remotion/bundler": "^4.0.0", \
+    "react": "^18.0.0", \
+    "react-dom": "^18.0.0" \
   } \
 }' > package.json
 
