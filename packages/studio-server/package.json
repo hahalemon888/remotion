@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "npx remotion studio --port=3000",
-    "build": "npx remotion build"
+    "start": "node node_modules/.bin/remotion studio --port=3000",
+    "start:npx": "npx remotion studio --port=3000",
+    "build": "node node_modules/.bin/remotion build",
+    "render": "node node_modules/.bin/remotion render"
   },
   "dependencies": {
     "remotion": "^4.0.0",
-    "@remotion/renderer": "^4.0.0"
+    "@remotion/renderer": "^4.0.0",
+    "@remotion/cli": "^4.0.0"  // 这是关键！
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
