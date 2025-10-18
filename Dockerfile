@@ -1,7 +1,7 @@
-# 使用 Node 18（Remotion 推荐版本）
+# 使用 Node 18 Alpine 版本
 FROM node:18-alpine
 
-# 安装必要的系统依赖
+# 安装系统依赖
 RUN apk add --no-cache \
     chromium \
     nss \
@@ -11,34 +11,36 @@ RUN apk add --no-cache \
     ca-certificates \
     ttf-freefont
 
-# 设置 Puppeteer 使用系统 Chromium
+# 设置环境变量
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    NODE_ENV=production
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制 package.json 文件
-COPY package.json package-lock.json* ./
-COPY packages/studio-server/package.json ./packages/studio-server/
+# 创建 package.json（简化版本）
+RUN echo '{ \
+  "name": "remotion-server", \
+  "version": "1.0.0", \
+  "scripts": { \
+    "start": "remotion studio --port=3000" \
+  }, \
+  "dependencies": { \
+    "remotion": "^4.0.0", \
+    "@remotion/cli": "^4.0.0", \
+    "@remotion/renderer": "^4.0.0" \
+  } \
+}' > package.json
 
 # 安装依赖
 RUN npm install --legacy-peer-deps
 
-# 复制源代码
+# 复制源代码（如果需要）
 COPY . .
-
-# 构建项目（如果需要）
-RUN npm run build || echo "No build script found, skipping..."
-
-# 切换到 studio-server 目录
-WORKDIR /app/packages/studio-server
-
-# 验证 remotion CLI 是否正确安装
-RUN ls -la node_modules/.bin/ | grep remotion || echo "Remotion CLI not found in .bin"
 
 # 暴露端口
 EXPOSE 3000
 
 # 启动命令
-CMD ["npm", "start"]
+CMD ["npx", "remotion", "studio", "--port=3000"]
