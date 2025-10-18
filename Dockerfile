@@ -19,12 +19,43 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 # 设置工作目录
 WORKDIR /app
 
-# 创建完整的 package.json（包含 React 依赖）
+# 创建目录结构
+RUN mkdir -p src
+
+# 创建简单的 Remotion 入口文件
+RUN echo 'import { registerRoot } from "remotion"; \
+import { MyComposition } from "./MyComposition"; \
+ \
+registerRoot(() => { \
+  return <MyComposition />; \
+});' > src/index.ts
+
+# 创建简单的示例组件
+RUN echo 'import React from "react"; \
+import { AbsoluteFill } from "remotion"; \
+ \
+export const MyComposition: React.FC = () => { \
+  return ( \
+    <AbsoluteFill \
+      style={{ \
+        justifyContent: "center", \
+        alignItems: "center", \
+        fontSize: 60, \
+        backgroundColor: "#000", \
+        color: "#fff", \
+      }} \
+    > \
+      Remotion Render Server \
+    </AbsoluteFill> \
+  ); \
+};' > src/MyComposition.tsx
+
+# 创建 package.json
 RUN echo '{ \
   "name": "remotion-server", \
   "version": "1.0.0", \
   "scripts": { \
-    "start": "remotion studio --port=3000" \
+    "start": "remotion studio src/index.ts --port=3000" \
   }, \
   "dependencies": { \
     "remotion": "^4.0.0", \
@@ -45,5 +76,5 @@ COPY . .
 # 暴露端口
 EXPOSE 3000
 
-# 启动命令
-CMD ["npx", "remotion", "studio", "--port=3000"]
+# 启动命令 - 指定入口点
+CMD ["npx", "remotion", "studio", "src/index.ts", "--port=3000"]
